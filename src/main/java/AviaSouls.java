@@ -14,6 +14,9 @@ public class AviaSouls {
     }
 
     public void add(Ticket ticket) {
+        if (ticket == null) {
+            throw new NullPointerException("Ticket cannot be null");
+        }
         tickets = addToArray(tickets, ticket);
     }
 
@@ -22,13 +25,13 @@ public class AviaSouls {
     }
 
     public Ticket[] search(String from, String to) {
-        Ticket[] result = new Ticket[0];
-        // Добавляем проверку на null
         if (from == null || to == null) {
-            return result;
+            throw new NullPointerException("From and to parameters cannot be null");
         }
+
+        Ticket[] result = new Ticket[0];
         for (Ticket ticket : tickets) {
-            if (from.equals(ticket.getFrom()) && to.equals(ticket.getTo())) {
+            if (ticket.getFrom().equals(from) && ticket.getTo().equals(to)) {
                 result = addToArray(result, ticket);
             }
         }
@@ -37,18 +40,17 @@ public class AviaSouls {
     }
 
     public Ticket[] searchAndSortBy(String from, String to, Comparator<Ticket> comparator) {
-        Ticket[] result = new Ticket[0];
-        // Добавляем проверку на null
         if (from == null || to == null || comparator == null) {
-            return result;
+            throw new NullPointerException("Parameters cannot be null");
         }
+
+        Ticket[] result = new Ticket[0];
         for (Ticket ticket : tickets) {
-            if (from.equals(ticket.getFrom()) && to.equals(ticket.getTo())) {
+            if (ticket.getFrom().equals(from) && ticket.getTo().equals(to)) {
                 result = addToArray(result, ticket);
             }
         }
         Arrays.sort(result, comparator);
         return result;
     }
-
 }

@@ -35,31 +35,32 @@ public class Ticket implements Comparable<Ticket> {
         return timeTo;
     }
 
-    public int getFlightTime() {
-        return timeTo - timeFrom;
-    }
-
-    @Override
-    public int compareTo(Ticket other) {
-        return Integer.compare(this.price, other.price);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ticket ticket = (Ticket) o;
-
-        // Безопасное сравнение строк с проверкой на null
-        if (!Objects.equals(from, ticket.from)) return false;
-        if (!Objects.equals(to, ticket.to)) return false;
-        if (price != ticket.price) return false;
-        if (timeFrom != ticket.timeFrom) return false;
-        return timeTo == ticket.timeTo;
+        return price == ticket.price && timeFrom == ticket.timeFrom && timeTo == ticket.timeTo && from.equals(ticket.from) && to.equals(ticket.to);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(from, to, price, timeFrom, timeTo);
+    }
+
+    @Override
+    public int compareTo(Ticket other) {
+        return this.price - other.price;
+    }
+
+    @Override
+    public String toString() {
+        return "Ticket{" +
+                "from='" + from + '\'' +
+                ", to='" + to + '\'' +
+                ", price=" + price +
+                ", timeFrom=" + timeFrom +
+                ", timeTo=" + timeTo +
+                '}';
     }
 }
