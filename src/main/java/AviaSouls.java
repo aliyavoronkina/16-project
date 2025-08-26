@@ -51,7 +51,4 @@ public class AviaSouls {
         return result;
     }
 
-    //еще тесты
-
-
 }

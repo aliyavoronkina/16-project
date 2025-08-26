@@ -880,4 +880,157 @@ public class AviaSoulsTest {
         Ticket[] result4 = manager.searchAndSortBy("VKO", null, comparator);
         assertEquals(0, result4.length);
     }
+
+    @Test
+    public void testTicketEqualsBothNullFromButDifferentTo() {
+        Ticket ticket1 = new Ticket(null, "LED", 5000, 1000, 1200);
+        Ticket ticket2 = new Ticket(null, "AER", 5000, 1000, 1200);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsBothNullToButDifferentFrom() {
+        Ticket ticket1 = new Ticket("VKO", null, 5000, 1000, 1200);
+        Ticket ticket2 = new Ticket("SVO", null, 5000, 1000, 1200);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsBothNullFromButDifferentPrice() {
+        Ticket ticket1 = new Ticket(null, "LED", 5000, 1000, 1200);
+        Ticket ticket2 = new Ticket(null, "LED", 6000, 1000, 1200);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsBothNullToButDifferentPrice() {
+        Ticket ticket1 = new Ticket("VKO", null, 5000, 1000, 1200);
+        Ticket ticket2 = new Ticket("VKO", null, 6000, 1000, 1200);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketTimeComparatorWithEqualFlightTimeButDifferentPrices() {
+        TicketTimeComparator comparator = new TicketTimeComparator();
+        Ticket ticket1 = new Ticket("VKO", "LED", 5000, 1000, 1200); // 200 мин
+        Ticket ticket2 = new Ticket("VKO", "LED", 6000, 900, 1100);  // 200 мин
+        assertEquals(0, comparator.compare(ticket1, ticket2));
+    }
+
+    @Test
+    public void testSearchWithExactEmptyStringMatch() {
+        AviaSouls manager = new AviaSouls();
+        manager.add(new Ticket("", "", 5000, 1000, 1200));
+
+        Ticket[] result = manager.search("", "");
+        assertEquals(1, result.length);
+        assertEquals(5000, result[0].getPrice());
+    }
+
+    @Test
+    public void testSearchAndSortByWithEmptyStrings() {
+        AviaSouls manager = new AviaSouls();
+        TicketTimeComparator comparator = new TicketTimeComparator();
+        manager.add(new Ticket("", "LED", 5000, 1000, 1200));
+        manager.add(new Ticket("VKO", "", 6000, 900, 1100));
+
+        Ticket[] result1 = manager.searchAndSortBy("", "LED", comparator);
+        Ticket[] result2 = manager.searchAndSortBy("VKO", "", comparator);
+
+        assertEquals(1, result1.length);
+        assertEquals(1, result2.length);
+    }
+
+    @Test
+    public void testTicketEqualsWithVariousNullCombinations() {
+        // Оба from null, оба to не null, но разные
+        Ticket ticket1 = new Ticket(null, "LED", 5000, 1000, 1200);
+        Ticket ticket2 = new Ticket(null, "AER", 5000, 1000, 1200);
+        assertFalse(ticket1.equals(ticket2));
+
+        // Оба to null, оба from не null, но разные
+        Ticket ticket3 = new Ticket("VKO", null, 5000, 1000, 1200);
+        Ticket ticket4 = new Ticket("SVO", null, 5000, 1000, 1200);
+        assertFalse(ticket3.equals(ticket4));
+
+        // Оба from и to null, но разные price
+        Ticket ticket5 = new Ticket(null, null, 5000, 1000, 1200);
+        Ticket ticket6 = new Ticket(null, null, 6000, 1000, 1200);
+        assertFalse(ticket5.equals(ticket6));
+    }
+
+    @Test
+    public void testTicketCompareToWithBoundaryValues() {
+        // Граничные значения для Integer.compare
+        Ticket ticket1 = new Ticket("VKO", "LED", 0, 1000, 1200);
+        Ticket ticket2 = new Ticket("VKO", "LED", 1, 900, 1100);
+        assertTrue(ticket1.compareTo(ticket2) < 0);
+
+        Ticket ticket3 = new Ticket("VKO", "LED", -1, 1000, 1200);
+        Ticket ticket4 = new Ticket("VKO", "LED", 0, 900, 1100);
+        assertTrue(ticket3.compareTo(ticket4) < 0);
+    }
+
+    @Test
+    public void testAddToArrayEdgeCases() {
+        AviaSouls manager = new AviaSouls();
+
+        // Добавление в пустой массив
+        Ticket ticket1 = new Ticket("VKO", "LED", 5000, 1000, 1200);
+        manager.add(ticket1);
+        assertEquals(1, manager.findAll().length);
+
+        // Добавление второго элемента
+        Ticket ticket2 = new Ticket("SVO", "LED", 6000, 900, 1100);
+        manager.add(ticket2);
+        assertEquals(2, manager.findAll().length);
+
+        // Проверка порядка элементов
+        Ticket[] result = manager.findAll();
+        assertEquals(ticket1, result[0]);
+        assertEquals(ticket2, result[1]);
+    }
+
+    @Test
+    public void testSearchAndSortByWithDifferentComparators() {
+        AviaSouls manager = new AviaSouls();
+        manager.add(new Ticket("VKO", "LED", 7000, 1000, 1300)); // 300 мин
+        manager.add(new Ticket("VKO", "LED", 5000, 900, 1100));  // 200 мин
+        manager.add(new Ticket("VKO", "LED", 6000, 800, 1100));  // 300 мин
+
+        // Сортировка по времени
+        TicketTimeComparator timeComparator = new TicketTimeComparator();
+        Ticket[] timeResult = manager.searchAndSortBy("VKO", "LED", timeComparator);
+        assertEquals(200, timeResult[0].getFlightTime());
+
+        // Сортировка по цене (естественный порядок)
+        Ticket[] priceResult = manager.search("VKO", "LED");
+        assertEquals(5000, priceResult[0].getPrice());
+    }
+
+    @Test
+    public void testTicketEqualsNullCombinations() {
+        // Все возможные комбинации null/not null для from и to
+        Ticket ticket1 = new Ticket(null, null, 5000, 1000, 1200);
+        Ticket ticket2 = new Ticket(null, "LED", 5000, 1000, 1200);
+        Ticket ticket3 = new Ticket("VKO", null, 5000, 1000, 1200);
+        Ticket ticket4 = new Ticket("VKO", "LED", 5000, 1000, 1200);
+
+        assertFalse(ticket1.equals(ticket2));
+        assertFalse(ticket1.equals(ticket3));
+        assertFalse(ticket1.equals(ticket4));
+        assertFalse(ticket2.equals(ticket3));
+        assertFalse(ticket2.equals(ticket4));
+        assertFalse(ticket3.equals(ticket4));
+
+        // Обратные сравнения
+        assertFalse(ticket2.equals(ticket1));
+        assertFalse(ticket3.equals(ticket1));
+        assertFalse(ticket4.equals(ticket1));
+    }
+
+
+
+
+
 }
