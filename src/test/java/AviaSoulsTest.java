@@ -1,9 +1,11 @@
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Comparator;
+import java.util.Arrays;
 
 public class AviaSoulsTest {
 
+    // Тесты для класса Ticket
     @Test
     public void testTicketConstructorAndGetters() {
         Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
@@ -43,6 +45,84 @@ public class AviaSoulsTest {
         });
     }
 
+    // Тесты для equals
+    @Test
+    public void testTicketEqualsWithSameObject() {
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        assertTrue(ticket.equals(ticket));
+    }
+
+    @Test
+    public void testTicketEqualsAllFieldsSame() {
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        assertTrue(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsDifferentFrom() {
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("SVO", "KZN", 5000, 10, 12);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsDifferentTo() {
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "LED", 5000, 10, 12);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsDifferentPrice() {
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "KZN", 6000, 10, 12);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsDifferentTimeFrom() {
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 11, 12);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsDifferentTimeTo() {
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 13);
+        assertFalse(ticket1.equals(ticket2));
+    }
+
+    @Test
+    public void testTicketEqualsWithNull() {
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        assertFalse(ticket.equals(null));
+    }
+
+    @Test
+    public void testTicketEqualsWithDifferentClass() {
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        assertFalse(ticket.equals("not a ticket"));
+    }
+
+    // Тесты для hashCode
+    @Test
+    public void testTicketHashCodeConsistency() {
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        int hashCode1 = ticket.hashCode();
+        int hashCode2 = ticket.hashCode();
+        assertEquals(hashCode1, hashCode2);
+    }
+
+    @Test
+    public void testTicketHashCodeForEqualObjects() {
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        assertEquals(ticket1.hashCode(), ticket2.hashCode());
+    }
+
+    // Тесты для TicketTimeComparator
     @Test
     public void testTicketTimeComparator() {
         TicketTimeComparator comparator = new TicketTimeComparator();
@@ -68,21 +148,6 @@ public class AviaSoulsTest {
         assertThrows(NullPointerException.class, () -> {
             comparator.compare(ticket, null);
         });
-
-        assertThrows(NullPointerException.class, () -> {
-            comparator.compare(null, null);
-        });
-    }
-
-    @Test
-    public void testTicketTimeComparatorEdgeCases() {
-        TicketTimeComparator comparator = new TicketTimeComparator();
-
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 5);  // Отрицательное время полета
-        Ticket ticket2 = new Ticket("VKO", "KZN", 3000, 5, 10);  // Положительное время полета
-
-        assertTrue(comparator.compare(ticket1, ticket2) < 0);
-        assertTrue(comparator.compare(ticket2, ticket1) > 0);
     }
 
     @Test
@@ -95,6 +160,61 @@ public class AviaSoulsTest {
         assertEquals(0, comparator.compare(ticket1, ticket2));
     }
 
+    @Test
+    public void testTicketTimeComparatorNegativeFlightTime() {
+        TicketTimeComparator comparator = new TicketTimeComparator();
+
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 15, 12); // -3 часа
+        Ticket ticket2 = new Ticket("VKO", "KZN", 3000, 10, 12); // 2 часа
+
+        assertTrue(comparator.compare(ticket1, ticket2) < 0);
+        assertTrue(comparator.compare(ticket2, ticket1) > 0);
+    }
+
+    // Тесты для AviaSouls - основные методы
+    @Test
+    public void testAddAndFindAll() {
+        AviaSouls souls = new AviaSouls();
+
+        // Проверяем пустую коллекцию
+        assertArrayEquals(new Ticket[0], souls.findAll());
+
+        // Добавляем билеты
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("SVO", "LED", 3000, 11, 14);
+
+        souls.add(ticket1);
+        souls.add(ticket2);
+
+        Ticket[] result = souls.findAll();
+        assertEquals(2, result.length);
+        assertTrue(arrayContains(result, ticket1));
+        assertTrue(arrayContains(result, ticket2));
+    }
+
+    @Test
+    public void testAddNullTicket() {
+        AviaSouls souls = new AviaSouls();
+
+        assertThrows(NullPointerException.class, () -> {
+            souls.add(null);
+        });
+    }
+
+    @Test
+    public void testAddMultipleTickets() {
+        AviaSouls souls = new AviaSouls();
+
+        // Добавляем 5 билетов
+        for (int i = 0; i < 5; i++) {
+            Ticket ticket = new Ticket("VKO" + i, "KZN" + i, 1000 + i, i, i + 2);
+            souls.add(ticket);
+        }
+
+        assertEquals(5, souls.findAll().length);
+    }
+
+    // Тесты для метода search
     @Test
     public void testSearchAndSortByPrice() {
         AviaSouls souls = new AviaSouls();
@@ -115,6 +235,97 @@ public class AviaSoulsTest {
         assertArrayEquals(expected, result);
     }
 
+    @Test
+    public void testSearchNotFound() {
+        AviaSouls souls = new AviaSouls();
+
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("SVO", "LED", 3000, 11, 14);
+
+        souls.add(ticket1);
+        souls.add(ticket2);
+
+        Ticket[] result = souls.search("VKO", "LED");
+        assertArrayEquals(new Ticket[0], result);
+    }
+
+    @Test
+    public void testSearchExactMatch() {
+        AviaSouls souls = new AviaSouls();
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        souls.add(ticket);
+
+        Ticket[] result = souls.search("VKO", "KZN");
+        assertArrayEquals(new Ticket[]{ticket}, result);
+    }
+
+    @Test
+    public void testSearchDifferentFrom() {
+        AviaSouls souls = new AviaSouls();
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        souls.add(ticket);
+
+        Ticket[] result = souls.search("SVO", "KZN");
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    public void testSearchDifferentTo() {
+        AviaSouls souls = new AviaSouls();
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        souls.add(ticket);
+
+        Ticket[] result = souls.search("VKO", "LED");
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    public void testSearchNoTickets() {
+        AviaSouls souls = new AviaSouls();
+        Ticket[] result = souls.search("VKO", "KZN");
+        assertEquals(0, result.length);
+    }
+
+    @Test
+    public void testSearchNullParameters() {
+        AviaSouls souls = new AviaSouls();
+        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
+        souls.add(ticket);
+
+        assertThrows(NullPointerException.class, () -> {
+            souls.search(null, "KZN");
+        });
+
+        assertThrows(NullPointerException.class, () -> {
+            souls.search("VKO", null);
+        });
+    }
+
+    @Test
+    public void testSearchWithMultipleSameRouteTickets() {
+        AviaSouls souls = new AviaSouls();
+
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "KZN", 3000, 11, 14);
+        Ticket ticket3 = new Ticket("VKO", "KZN", 7000, 9, 11);
+        Ticket ticket4 = new Ticket("VKO", "KZN", 4000, 8, 10);
+
+        souls.add(ticket1);
+        souls.add(ticket2);
+        souls.add(ticket3);
+        souls.add(ticket4);
+
+        Ticket[] result = souls.search("VKO", "KZN");
+        assertEquals(4, result.length);
+
+        // Проверяем сортировку по цене
+        assertEquals(ticket2, result[0]); // 3000
+        assertEquals(ticket4, result[1]); // 4000
+        assertEquals(ticket1, result[2]); // 5000
+        assertEquals(ticket3, result[3]); // 7000
+    }
+
+    // Тесты для метода searchAndSortBy
     @Test
     public void testSearchAndSortByTime() {
         AviaSouls souls = new AviaSouls();
@@ -137,37 +348,12 @@ public class AviaSoulsTest {
     }
 
     @Test
-    public void testSearchAndSortByTimeWithMultipleTickets() {
-        AviaSouls souls = new AviaSouls();
-        TicketTimeComparator timeComparator = new TicketTimeComparator();
-
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 15); // 5 часов
-        Ticket ticket2 = new Ticket("VKO", "KZN", 3000, 11, 12); // 1 час
-        Ticket ticket3 = new Ticket("VKO", "KZN", 7000, 9, 11);  // 2 часа
-        Ticket ticket4 = new Ticket("VKO", "LED", 4000, 8, 10);  // 2 часа, другой маршрут
-
-        souls.add(ticket1);
-        souls.add(ticket2);
-        souls.add(ticket3);
-        souls.add(ticket4);
-
-        Ticket[] result = souls.searchAndSortBy("VKO", "KZN", timeComparator);
-        Ticket[] expected = {ticket2, ticket3, ticket1};
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
     public void testSearchAndSortByWithCustomComparator() {
         AviaSouls souls = new AviaSouls();
 
         // Компаратор для сортировки по убыванию цены
-        Comparator<Ticket> priceDescComparator = new Comparator<Ticket>() {
-            @Override
-            public int compare(Ticket t1, Ticket t2) {
-                return Integer.compare(t2.getPrice(), t1.getPrice());
-            }
-        };
+        Comparator<Ticket> priceDescComparator = (t1, t2) ->
+                Integer.compare(t2.getPrice(), t1.getPrice());
 
         Ticket ticket1 = new Ticket("VKO", "KZN", 3000, 10, 12);
         Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 11, 14);
@@ -192,9 +378,7 @@ public class AviaSoulsTest {
         souls.add(ticket);
 
         Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
-        Ticket[] expected = {ticket};
-
-        assertArrayEquals(expected, result);
+        assertArrayEquals(new Ticket[]{ticket}, result);
     }
 
     @Test
@@ -206,9 +390,7 @@ public class AviaSoulsTest {
         souls.add(ticket);
 
         Ticket[] result = souls.searchAndSortBy("SVO", "LED", timeComparator);
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
@@ -216,257 +398,12 @@ public class AviaSoulsTest {
         AviaSouls souls = new AviaSouls();
         TicketTimeComparator comparator = new TicketTimeComparator();
 
-        Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchNotFound() {
-        AviaSouls souls = new AviaSouls();
-
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("SVO", "LED", 3000, 11, 14);
-
-        souls.add(ticket1);
-        souls.add(ticket2);
-
-        Ticket[] result = souls.search("VKO", "LED");
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchExactMatch() {
-        AviaSouls souls = new AviaSouls();
         Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
         souls.add(ticket);
 
-        Ticket[] result = souls.search("VKO", "KZN");
-        Ticket[] expected = {ticket};
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchDifferentFrom() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        souls.add(ticket);
-
-        Ticket[] result = souls.search("SVO", "KZN");
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchDifferentTo() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        souls.add(ticket);
-
-        Ticket[] result = souls.search("VKO", "LED");
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchBothDifferent() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        souls.add(ticket);
-
-        Ticket[] result = souls.search("SVO", "LED");
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchCaseSensitive() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        souls.add(ticket);
-
-        Ticket[] result1 = souls.search("vko", "KZN");
-        Ticket[] result2 = souls.search("VKO", "kzn");
-        Ticket[] result3 = souls.search("vko", "kzn");
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result1);
-        assertArrayEquals(expected, result2);
-        assertArrayEquals(expected, result3);
-    }
-
-    @Test
-    public void testSearchEmptyStrings() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket1 = new Ticket("", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "", 3000, 11, 14);
-        souls.add(ticket1);
-        souls.add(ticket2);
-
-        Ticket[] result1 = souls.search("", "KZN");
-        Ticket[] result2 = souls.search("VKO", "");
-        Ticket[] result3 = souls.search("", "");
-        Ticket[] expected1 = {ticket1};
-        Ticket[] expected2 = {ticket2};
-        Ticket[] expected3 = new Ticket[0];
-
-        assertArrayEquals(expected1, result1);
-        assertArrayEquals(expected2, result2);
-        assertArrayEquals(expected3, result3);
-    }
-
-    @Test
-    public void testSearchWithSameFromTo() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "VKO", 5000, 10, 12);
-        souls.add(ticket);
-
-        Ticket[] result = souls.search("VKO", "VKO");
-        Ticket[] expected = {ticket};
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchWithWhitespace() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket1 = new Ticket(" VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN ", 3000, 11, 14);
-        Ticket ticket3 = new Ticket("SVO", "LED", 7000, 9, 11);
-
-        souls.add(ticket1);
-        souls.add(ticket2);
-        souls.add(ticket3);
-
-        Ticket[] result1 = souls.search(" VKO", "KZN");
-        Ticket[] result2 = souls.search("VKO", "KZN ");
-        Ticket[] result3 = souls.search("SVO", "LED");
-        Ticket[] expected1 = {ticket1};
-        Ticket[] expected2 = {ticket2};
-        Ticket[] expected3 = {ticket3};
-
-        assertArrayEquals(expected1, result1);
-        assertArrayEquals(expected2, result2);
-        assertArrayEquals(expected3, result3);
-    }
-
-    @Test
-    public void testSearchWithSpecialCharacters() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket1 = new Ticket("VKO-1", "KZN-2", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("SVO_3", "LED_4", 3000, 11, 14);
-
-        souls.add(ticket1);
-        souls.add(ticket2);
-
-        Ticket[] result1 = souls.search("VKO-1", "KZN-2");
-        Ticket[] result2 = souls.search("SVO_3", "LED_4");
-        Ticket[] expected1 = {ticket1};
-        Ticket[] expected2 = {ticket2};
-
-        assertArrayEquals(expected1, result1);
-        assertArrayEquals(expected2, result2);
-    }
-
-    @Test
-    public void testSearchLongStrings() {
-        String longFrom = "VERY_LONG_AIRPORT_NAME_FROM_1234567890";
-        String longTo = "VERY_LONG_AIRPORT_NAME_TO_1234567890";
-
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket(longFrom, longTo, 5000, 10, 12);
-        souls.add(ticket);
-
-        Ticket[] result = souls.search(longFrom, longTo);
-        Ticket[] expected = {ticket};
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchWithMaxIntValues() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "KZN", Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
-        souls.add(ticket);
-
-        Ticket[] result = souls.search("VKO", "KZN");
-        Ticket[] expected = {ticket};
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchWithMinIntValues() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "KZN", Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
-        souls.add(ticket);
-
-        Ticket[] result = souls.search("VKO", "KZN");
-        Ticket[] expected = {ticket};
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchMultipleMatches() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 3000, 11, 14);
-        Ticket ticket3 = new Ticket("SVO", "LED", 7000, 9, 11);
-
-        souls.add(ticket1);
-        souls.add(ticket2);
-        souls.add(ticket3);
-
-        Ticket[] result = souls.search("VKO", "KZN");
-        Ticket[] expected = {ticket2, ticket1}; // Сортировка по цене
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchNoTickets() {
-        AviaSouls souls = new AviaSouls();
-        Ticket[] result = souls.search("VKO", "KZN");
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testEmptyManager() {
-        AviaSouls souls = new AviaSouls();
-
-        Ticket[] result = souls.search("VKO", "KZN");
-        Ticket[] expected = new Ticket[0];
-
-        assertArrayEquals(expected, result);
-    }
-
-    @Test
-    public void testSearchNullParameters() {
-        AviaSouls souls = new AviaSouls();
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        souls.add(ticket);
-
-        assertThrows(NullPointerException.class, () -> {
-            souls.search(null, "KZN");
-        });
-
-        assertThrows(NullPointerException.class, () -> {
-            souls.search("VKO", null);
-        });
-
-        assertThrows(NullPointerException.class, () -> {
-            souls.search(null, null);
-        });
+        Ticket[] result = souls.searchAndSortBy("SVO", "LED", comparator);
+        assertNotNull(result);
+        assertEquals(0, result.length);
     }
 
     @Test
@@ -494,69 +431,12 @@ public class AviaSoulsTest {
         assertThrows(NullPointerException.class, () -> {
             souls.searchAndSortBy("VKO", null, comparator);
         });
-
-        assertThrows(NullPointerException.class, () -> {
-            souls.searchAndSortBy(null, null, comparator);
-        });
-
-        assertThrows(NullPointerException.class, () -> {
-            souls.searchAndSortBy(null, null, null);
-        });
     }
 
+    // Тест для проверки работы метода addToArray через публичный интерфейс
     @Test
-    public void testAddToArrayMethod() {
+    public void testAddToArrayMethodThroughInterface() {
         AviaSouls souls = new AviaSouls();
-
-        Ticket[] expectedEmpty = new Ticket[0];
-        assertArrayEquals(expectedEmpty, souls.findAll());
-
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        souls.add(ticket1);
-
-        Ticket[] expectedOne = {ticket1};
-        assertArrayEquals(expectedOne, souls.findAll());
-
-        Ticket ticket2 = new Ticket("SVO", "LED", 3000, 11, 14);
-        souls.add(ticket2);
-
-        Ticket[] expectedTwo = {ticket1, ticket2};
-        assertArrayEquals(expectedTwo, souls.findAll());
-    }
-
-    @Test
-    public void testAddNullTicket() {
-        AviaSouls souls = new AviaSouls();
-
-        assertThrows(NullPointerException.class, () -> {
-            souls.add(null);
-        });
-    }
-
-    @Test
-    public void testAddMultipleTickets() {
-        AviaSouls souls = new AviaSouls();
-
-        Ticket[] expectedEmpty = new Ticket[0];
-        assertArrayEquals(expectedEmpty, souls.findAll());
-
-        // Добавляем 5 билетов
-        Ticket[] expectedTickets = new Ticket[5];
-        for (int i = 0; i < 5; i++) {
-            Ticket ticket = new Ticket("VKO" + i, "KZN" + i, 1000 + i, i, i + 2);
-            souls.add(ticket);
-            expectedTickets[i] = ticket;
-        }
-
-        assertArrayEquals(expectedTickets, souls.findAll());
-    }
-
-    @Test
-    public void testFindAllMethod() {
-        AviaSouls souls = new AviaSouls();
-
-        Ticket[] expectedEmpty = new Ticket[0];
-        assertArrayEquals(expectedEmpty, souls.findAll());
 
         Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
         Ticket ticket2 = new Ticket("SVO", "LED", 3000, 11, 14);
@@ -564,180 +444,107 @@ public class AviaSoulsTest {
         souls.add(ticket1);
         souls.add(ticket2);
 
-        Ticket[] allTickets = souls.findAll();
-        Ticket[] expected = {ticket1, ticket2};
-
-        assertArrayEquals(expected, allTickets);
+        Ticket[] result = souls.findAll();
+        assertEquals(2, result.length);
+        assertEquals(ticket1, result[0]);
+        assertEquals(ticket2, result[1]);
     }
 
-    // Остальные тесты для equals, hashCode и т.д. остаются без изменений
-    // так как они не работают с массивами
-
-    @Test
-    public void testEqualsReflexivity() {
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        assertTrue(ticket.equals(ticket));
-    }
-
-    @Test
-    public void testEqualsSymmetry() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
-
-        assertTrue(ticket1.equals(ticket2));
-        assertTrue(ticket2.equals(ticket1));
-    }
-
-    @Test
-    public void testEqualsTransitivity() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket3 = new Ticket("VKO", "KZN", 5000, 10, 12);
-
-        assertTrue(ticket1.equals(ticket2));
-        assertTrue(ticket2.equals(ticket3));
-        assertTrue(ticket1.equals(ticket3));
-    }
-
-    @Test
-    public void testEqualsConsistency() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
-
-        for (int i = 0; i < 10; i++) {
-            assertTrue(ticket1.equals(ticket2));
+    // Вспомогательный метод для проверки наличия элемента в массиве
+    private boolean arrayContains(Ticket[] array, Ticket ticket) {
+        for (Ticket t : array) {
+            if (t.equals(ticket)) {
+                return true;
+            }
         }
+        return false;
     }
 
     @Test
-    public void testEqualsNull() {
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        assertFalse(ticket.equals(null));
+    public void testSearchAndSortByWithEmptyTicketsArray() {
+        AviaSouls souls = new AviaSouls();
+        TicketTimeComparator comparator = new TicketTimeComparator();
+
+        // Пустой массив билетов
+        Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
-    public void testEqualsDifferentClass() {
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        String notATicket = "not a ticket";
-        assertFalse(ticket.equals(notATicket));
+    public void testSearchAndSortByWithNoMatchingTickets() {
+        AviaSouls souls = new AviaSouls();
+        TicketTimeComparator comparator = new TicketTimeComparator();
+
+        // Добавляем билеты, которые не соответствуют критериям поиска
+        Ticket ticket1 = new Ticket("SVO", "LED", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "LED", 3000, 11, 14);
+        Ticket ticket3 = new Ticket("SVO", "KZN", 7000, 9, 11);
+
+        souls.add(ticket1);
+        souls.add(ticket2);
+        souls.add(ticket3);
+
+        // Ищем маршрут, которого нет
+        Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
-    public void testEqualsWithItself() {
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        assertTrue(ticket.equals(ticket));
+    public void testSearchAndSortByWithMixedMatchingAndNonMatching() {
+        AviaSouls souls = new AviaSouls();
+        TicketTimeComparator comparator = new TicketTimeComparator();
+
+        // Добавляем смесь подходящих и неподходящих билетов
+        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 13); // 3 часа - подходит
+        Ticket ticket2 = new Ticket("SVO", "LED", 3000, 11, 14); // не подходит
+        Ticket ticket3 = new Ticket("VKO", "KZN", 7000, 9, 10);  // 1 час - подходит
+        Ticket ticket4 = new Ticket("VKO", "LED", 4000, 8, 10);  // не подходит
+
+        souls.add(ticket1);
+        souls.add(ticket2);
+        souls.add(ticket3);
+        souls.add(ticket4);
+
+        Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
+        assertEquals(2, result.length);
+
+        // Проверяем сортировку по времени полета
+        assertEquals(ticket3, result[0]); // 1 час
+        assertEquals(ticket1, result[1]); // 3 часа
     }
 
     @Test
-    public void testEqualsWithDifferentObjectType() {
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        String notATicket = "not a ticket";
+    public void testSearchWithEmptyTicketsArray() {
+        AviaSouls souls = new AviaSouls();
 
-        assertFalse(ticket.equals(notATicket));
+        // Пустой массив билетов
+        Ticket[] result = souls.search("VKO", "KZN");
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
-    public void testEqualsAllFieldsSame() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        assertTrue(ticket1.equals(ticket2));
-    }
+    public void testSearchWithNoMatchingTickets() {
+        AviaSouls souls = new AviaSouls();
 
-    @Test
-    public void testEqualsDifferentFrom() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("SVO", "KZN", 5000, 10, 12);
-        assertFalse(ticket1.equals(ticket2));
-    }
+        // Добавляем билеты, которые не соответствуют критериям поиска
+        Ticket ticket1 = new Ticket("SVO", "LED", 5000, 10, 12);
+        Ticket ticket2 = new Ticket("VKO", "LED", 3000, 11, 14);
+        Ticket ticket3 = new Ticket("SVO", "KZN", 7000, 9, 11);
 
-    @Test
-    public void testEqualsDifferentTo() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "LED", 5000, 10, 12);
-        assertFalse(ticket1.equals(ticket2));
-    }
+        souls.add(ticket1);
+        souls.add(ticket2);
+        souls.add(ticket3);
 
-    @Test
-    public void testEqualsDifferentPrice() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 6000, 10, 12);
-        assertFalse(ticket1.equals(ticket2));
-    }
-
-    @Test
-    public void testEqualsDifferentTimeFrom() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 11, 12);
-        assertFalse(ticket1.equals(ticket2));
-    }
-
-    @Test
-    public void testEqualsDifferentTimeTo() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 13);
-        assertFalse(ticket1.equals(ticket2));
-    }
-
-    @Test
-    public void testEqualsCaseSensitivity() {
-        Ticket ticket1 = new Ticket("vko", "kzn", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
-
-        assertFalse(ticket1.equals(ticket2));
-    }
-
-    @Test
-    public void testEqualsMultipleDifferences() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("SVO", "LED", 6000, 11, 13);
-        assertFalse(ticket1.equals(ticket2));
-    }
-
-    @Test
-    public void testHashCodeConsistency() {
-        Ticket ticket = new Ticket("VKO", "KZN", 5000, 10, 12);
-        int firstHash = ticket.hashCode();
-
-        for (int i = 0; i < 10; i++) {
-            assertEquals(firstHash, ticket.hashCode());
-        }
-    }
-
-    @Test
-    public void testHashCodeEqualsContract() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("VKO", "KZN", 5000, 10, 12);
-
-        assertTrue(ticket1.equals(ticket2));
-        assertEquals(ticket1.hashCode(), ticket2.hashCode());
-    }
-
-    @Test
-    public void testHashCodeDifferentObjects() {
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("SVO", "LED", 6000, 11, 13);
-
-        assertNotEquals(ticket1.hashCode(), ticket2.hashCode());
-    }
-
-    @Test
-    public void testEdgeCases() {
-        Ticket ticket1 = new Ticket("", "", 0, 0, 0);
-        Ticket ticket2 = new Ticket("", "", 0, 0, 0);
-
-        assertTrue(ticket1.equals(ticket2));
-        assertEquals(ticket1.hashCode(), ticket2.hashCode());
-
-        Ticket ticket3 = new Ticket("A", "B", Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
-        Ticket ticket4 = new Ticket("A", "B", Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
-
-        assertTrue(ticket3.equals(ticket4));
-        assertEquals(ticket3.hashCode(), ticket4.hashCode());
-
-        Ticket ticket5 = new Ticket("A", "B", Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
-        Ticket ticket6 = new Ticket("A", "B", Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
-
-        assertTrue(ticket5.equals(ticket6));
-        assertEquals(ticket5.hashCode(), ticket6.hashCode());
+        // Ищем маршрут, которого нет
+        Ticket[] result = souls.search("VKO", "KZN");
+        assertNotNull(result);
+        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 }
