@@ -187,9 +187,7 @@ public class AviaSoulsTest {
         souls.add(ticket2);
 
         Ticket[] result = souls.findAll();
-        assertEquals(2, result.length);
-        assertTrue(arrayContains(result, ticket1));
-        assertTrue(arrayContains(result, ticket2));
+        assertArrayEquals(new Ticket[]{ticket1, ticket2}, result);
     }
 
     @Test
@@ -206,12 +204,14 @@ public class AviaSoulsTest {
         AviaSouls souls = new AviaSouls();
 
         // Добавляем 5 билетов
+        Ticket[] expected = new Ticket[5];
         for (int i = 0; i < 5; i++) {
             Ticket ticket = new Ticket("VKO" + i, "KZN" + i, 1000 + i, i, i + 2);
             souls.add(ticket);
+            expected[i] = ticket;
         }
 
-        assertEquals(5, souls.findAll().length);
+        assertArrayEquals(expected, souls.findAll());
     }
 
     // Тесты для метода search
@@ -266,7 +266,7 @@ public class AviaSoulsTest {
         souls.add(ticket);
 
         Ticket[] result = souls.search("SVO", "KZN");
-        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
@@ -276,14 +276,14 @@ public class AviaSoulsTest {
         souls.add(ticket);
 
         Ticket[] result = souls.search("VKO", "LED");
-        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
     public void testSearchNoTickets() {
         AviaSouls souls = new AviaSouls();
         Ticket[] result = souls.search("VKO", "KZN");
-        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
@@ -316,13 +316,9 @@ public class AviaSoulsTest {
         souls.add(ticket4);
 
         Ticket[] result = souls.search("VKO", "KZN");
-        assertEquals(4, result.length);
+        Ticket[] expected = {ticket2, ticket4, ticket1, ticket3};
 
-        // Проверяем сортировку по цене
-        assertEquals(ticket2, result[0]); // 3000
-        assertEquals(ticket4, result[1]); // 4000
-        assertEquals(ticket1, result[2]); // 5000
-        assertEquals(ticket3, result[3]); // 7000
+        assertArrayEquals(expected, result);
     }
 
     // Тесты для метода searchAndSortBy
@@ -402,8 +398,7 @@ public class AviaSoulsTest {
         souls.add(ticket);
 
         Ticket[] result = souls.searchAndSortBy("SVO", "LED", comparator);
-        assertNotNull(result);
-        assertEquals(0, result.length);
+        assertArrayEquals(new Ticket[0], result);
     }
 
     @Test
@@ -433,33 +428,6 @@ public class AviaSoulsTest {
         });
     }
 
-    // Тест для проверки работы метода addToArray через публичный интерфейс
-    @Test
-    public void testAddToArrayMethodThroughInterface() {
-        AviaSouls souls = new AviaSouls();
-
-        Ticket ticket1 = new Ticket("VKO", "KZN", 5000, 10, 12);
-        Ticket ticket2 = new Ticket("SVO", "LED", 3000, 11, 14);
-
-        souls.add(ticket1);
-        souls.add(ticket2);
-
-        Ticket[] result = souls.findAll();
-        assertEquals(2, result.length);
-        assertEquals(ticket1, result[0]);
-        assertEquals(ticket2, result[1]);
-    }
-
-    // Вспомогательный метод для проверки наличия элемента в массиве
-    private boolean arrayContains(Ticket[] array, Ticket ticket) {
-        for (Ticket t : array) {
-            if (t.equals(ticket)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Test
     public void testSearchAndSortByWithEmptyTicketsArray() {
         AviaSouls souls = new AviaSouls();
@@ -467,8 +435,6 @@ public class AviaSoulsTest {
 
         // Пустой массив билетов
         Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
-        assertNotNull(result);
-        assertEquals(0, result.length);
         assertArrayEquals(new Ticket[0], result);
     }
 
@@ -488,8 +454,6 @@ public class AviaSoulsTest {
 
         // Ищем маршрут, которого нет
         Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
-        assertNotNull(result);
-        assertEquals(0, result.length);
         assertArrayEquals(new Ticket[0], result);
     }
 
@@ -510,11 +474,9 @@ public class AviaSoulsTest {
         souls.add(ticket4);
 
         Ticket[] result = souls.searchAndSortBy("VKO", "KZN", comparator);
-        assertEquals(2, result.length);
+        Ticket[] expected = {ticket3, ticket1};
 
-        // Проверяем сортировку по времени полета
-        assertEquals(ticket3, result[0]); // 1 час
-        assertEquals(ticket1, result[1]); // 3 часа
+        assertArrayEquals(expected, result);
     }
 
     @Test
@@ -523,8 +485,6 @@ public class AviaSoulsTest {
 
         // Пустой массив билетов
         Ticket[] result = souls.search("VKO", "KZN");
-        assertNotNull(result);
-        assertEquals(0, result.length);
         assertArrayEquals(new Ticket[0], result);
     }
 
@@ -543,8 +503,16 @@ public class AviaSoulsTest {
 
         // Ищем маршрут, которого нет
         Ticket[] result = souls.search("VKO", "KZN");
-        assertNotNull(result);
-        assertEquals(0, result.length);
         assertArrayEquals(new Ticket[0], result);
+    }
+
+    // Вспомогательный метод для проверки наличия элемента в массиве
+    private boolean arrayContains(Ticket[] array, Ticket ticket) {
+        for (Ticket t : array) {
+            if (t.equals(ticket)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
